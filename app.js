@@ -1,9 +1,11 @@
 import express from 'express';
+import cors from 'cors';
 import fetch from "node-fetch";
 import { isNumber } from './utils/index.js';
 
-const app = new express();
+const app = express();
 const PORT = 8080;
+app.use(cors());
 
 app.listen(
   PORT,
