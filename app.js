@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import fetch from "node-fetch";
 import { isNumber } from './utils/index.js';
+import { getAllFoodTrucks, getFoodTruckById, searchFoodTruck } from './services/foodTruck/index.js';
 
 const app = express();
 const PORT = 8080;
@@ -14,64 +14,75 @@ app.listen(
   () => console.log(`Application running at port: ${PORT}`),
 );
 
-const foodTrucksDataUrl = 'https://data.sfgov.org/api/id/rqzj-sfat.json';
+/**
+ * /food-trucks?limit=100&offset=0
+ * Get all food trucks
+ */
 app.get('/food-trucks', async (req, res) => {
-  const { limit = 100, offset = 1 } = req.query;
+  const { limit = 100, offset = 0 } = req.query;
   if (!isNumber(parseInt(limit, 10)) || !isNumber(parseInt(offset, 10))) {
     res.status(400).send({
       message: 'Invalid Request',
     });
+    return;
   }
   try {
-    const params = new URLSearchParams({
-      $query: `select *, :id offset ${offset} limit ${limit}`,
-    });
-
-    const response = await fetch(`${foodTrucksDataUrl}?${params}`);
-    const data = await response.json();
+    const data = await getAllFoodTrucks(offset, limit);
     res.status(200).send(data);
+    return;
   } catch(e){
     res.status(500).send({ message: e.message });
+    return;
   }
 });
 
+/**
+ * /food-trucks/123
+ * Get food truck by id
+ */
 app.get('/food-trucks/:id', async (req, res) => {
   const { id } = req.params;
-  const params = new URLSearchParams({
-    $query: `select *, :id where (\`objectid\` = ${id})`,
-  });
-
   try {
-    const response = await fetch(`${foodTrucksDataUrl}?${params}`);
-    const data = await response.json();
-    if (!data || !data.length) {
+    const data = await getFoodTruckById(id);
+    if (!data) {
       res.status(404).send({
         message: `Food truck id ${id} not found`,
       });
+      return;
     }
-    res.status(200).send(data[0]);
+    res.status(200).send(data);
+    return;
   } catch (e) {
     res.status(500).send({ message: e.message });
+    return;
   }
 });
 
+/**
+ * /food-trucks/search
+ * body: { searchValue: 'taco' }
+ * Search food truck
+ */
 app.post('/food-trucks/search', async (req, res) => {
   const { searchValue } = req.body;
-
-  const params = new URLSearchParams({
-    $query: `select *, :id where ((contains(upper(\`fooditems\`), upper('${searchValue}'))) or (contains(upper(\`applicant\`), upper('${searchValue}'))))`,
-
-  });
+  if (!searchFoodTruck) {
+    res.status(400).send({
+      message: 'Invalid Request',
+    });
+    return;
+  }
   try {
-    const response = await fetch(`${foodTrucksDataUrl}?${params}`);
-    const data = await response.json();
+    const data = await searchFoodTruck(searchValue);
     if (!data || !data.length) {
       res.status(404).send({
         message: `Food truck id ${id} not found`,
       });
+      return;
     }
     res.status(200).send(data);
+    return;
   } catch (e) {
     res.status(500).send(e.message);
+    return;
   }
 });
