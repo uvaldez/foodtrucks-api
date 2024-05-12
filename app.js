@@ -38,12 +38,16 @@ app.get('/food-trucks/:id', async (req, res) => {
   const params = new URLSearchParams({
     $query: `select *, :id where (\`objectid\` = ${id})`,
   });
-  const response = await fetch(`${foodTrucksDataUrl}?${params}`);
-  const data = await response.json();
-  if (!data) {
-    res.status(404).send({
-      message: `Food truck id ${id} not found`,
-    });
+  try {
+    const response = await fetch(`${foodTrucksDataUrl}?${params}`);
+    const data = await response.json();
+    if (!data || !data.length) {
+      res.status(404).send({
+        message: `Food truck id ${id} not found`,
+      });
+    }
+    res.status(200).send(data[0]);
+  } catch (e) {
+    res.status(500).send(e.message);
   }
-  res.status(200).send(data[0]);  
 });
