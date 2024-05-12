@@ -13,8 +13,7 @@ export const getAllFoodTrucks = async (offset, limit) => {
   });
 
   const response = await fetch(`${foodTrucksDataUrl}?${params}`);
-  const data = await response.json();
-  return data;
+  return response.json();
 }
 
 /**
@@ -27,8 +26,7 @@ export const getFoodTruckById = async (id) => {
     $query: `select *, :id where (\`objectid\` = ${id})`,
   });
   const response = await fetch(`${foodTrucksDataUrl}?${params}`);
-  const data = await response.json();
-  return data[0];
+  return response.json();
 }
 
 /**
@@ -39,8 +37,7 @@ export const getFoodTruckById = async (id) => {
 export const searchFoodTruck =  async (searchValue) => {
   const params = new URLSearchParams({
     $query: `select *, :id where ((contains(upper(\`fooditems\`), upper('${searchValue}'))) or (contains(upper(\`applicant\`), upper('${searchValue}'))))`,
-  });  
+  });
   const response = await fetch(`${foodTrucksDataUrl}?${params}`);
-  const data = await response.json();
-  return data;
+  return response.json();
 }
