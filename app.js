@@ -40,17 +40,7 @@ app.get('/food-trucks/:id', async (req, res) => {
   const params = new URLSearchParams({
     $query: `select *, :id where (\`objectid\` = ${id})`,
   });
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-  const response = await fetch(`${foodTrucksDataUrl}?${params}`);
-  const data = await response.json();
-  if (!data) {
-    res.status(404).send({
-      message: `Food truck id ${id} not found`,
-    });
-=======
-=======
->>>>>>> main
+
   try {
     const response = await fetch(`${foodTrucksDataUrl}?${params}`);
     const data = await response.json();
@@ -61,13 +51,11 @@ app.get('/food-trucks/:id', async (req, res) => {
     }
     res.status(200).send(data[0]);
   } catch (e) {
-<<<<<<< HEAD
     res.status(500).send({ message: e.message });
   }
 });
 
 app.post('/food-trucks/search', async (req, res) => {
-  console.log('body', req.body);
   const { searchValue } = req.body;
 
   const params = new URLSearchParams({
@@ -84,10 +72,6 @@ app.post('/food-trucks/search', async (req, res) => {
     }
     res.status(200).send(data);
   } catch (e) {
-    res.status(500).send({ message: e.message });
->>>>>>> Stashed changes
-=======
     res.status(500).send(e.message);
->>>>>>> main
   }
 });
