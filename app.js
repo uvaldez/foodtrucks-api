@@ -73,12 +73,6 @@ app.post('/food-trucks/search', async (req, res) => {
   }
   try {
     const data = await searchFoodTruck(searchValue);
-    if (!data || !data.length) {
-      res.status(404).send({
-        message: `Food truck id ${id} not found`,
-      });
-      return;
-    }
     res.status(200).send(data);
     return;
   } catch (e) {
