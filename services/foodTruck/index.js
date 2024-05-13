@@ -26,7 +26,8 @@ export const getFoodTruckById = async (id) => {
     $query: `select *, :id where (\`objectid\` = ${id})`,
   });
   const response = await fetch(`${foodTrucksDataUrl}?${params}`);
-  return response.json();
+  const data = await response.json();
+  return data[0];
 }
 
 /**
