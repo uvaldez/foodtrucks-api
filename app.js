@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import { isNumber } from './utils/index.js';
 import FoodTruck from './services/foodTruck/index.js';
+import { checkCachedData, getCacheKey, saveToCache } from './middleware.js';
+import { DEFAULT_LIMIT, DEFAULT_OFFSET } from './utils/constants.js';
 
 const app = express();
 const PORT = 8080;
@@ -19,8 +21,8 @@ const foodTruckService = new FoodTruck();
  * /food-trucks?limit=100&offset=0
  * Get all food trucks
  */
-app.get('/food-trucks', async (req, res) => {
-  const { limit = 100, offset = 0 } = req.query;
+app.get('/food-trucks', checkCachedData, async (req, res) => {
+  const { limit = DEFAULT_LIMIT, offset = DEFAULT_OFFSET } = req.query;
   if (!isNumber(parseInt(limit, 10)) || !isNumber(parseInt(offset, 10))) {
     res.status(400).send({
       message: 'Invalid Request',
@@ -29,6 +31,8 @@ app.get('/food-trucks', async (req, res) => {
   }
   try {
     const data = await foodTruckService.getAllFoodTrucks(offset, limit);
+    const cacheKey = getCacheKey(req);
+    await saveToCache(cacheKey, data);
     res.status(200).send(data);
     return;
   } catch(e){
@@ -41,7 +45,7 @@ app.get('/food-trucks', async (req, res) => {
  * /food-trucks/123
  * Get food truck by id
  */
-app.get('/food-trucks/:id', async (req, res) => {
+app.get('/food-trucks/:id', checkCachedData, async (req, res) => {
   const { id } = req.params;
   try {
     const data = await foodTruckService.getFoodTruckById(id);
@@ -51,6 +55,8 @@ app.get('/food-trucks/:id', async (req, res) => {
       });
       return;
     }
+    const cacheKey = getCacheKey(req);
+    await saveToCache(cacheKey, data);
     res.status(200).send(data);
     return;
   } catch (e) {
@@ -64,7 +70,7 @@ app.get('/food-trucks/:id', async (req, res) => {
  * body: { searchValue: 'taco' }
  * Search food truck
  */
-app.post('/food-trucks/search', async (req, res) => {
+app.post('/food-trucks/search', checkCachedData, async (req, res) => {
   const { searchValue } = req.body;
   if (!searchValue) {
     res.status(400).send({
@@ -74,6 +80,8 @@ app.post('/food-trucks/search', async (req, res) => {
   }
   try {
     const data = await foodTruckService.searchFoodTruck(searchValue);
+    const cacheKey = getCacheKey(req);
+    await saveToCache(cacheKey, data);
     res.status(200).send(data);
     return;
   } catch (e) {
